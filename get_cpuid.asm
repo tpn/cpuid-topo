@@ -1,36 +1,36 @@
-;	Copyright 2008-2016  Intel Corporation 
+;   Copyright 2008-2016  Intel Corporation
 ;All rights reserved.
-;Redistribution and use in source and binary forms, with or without modification, 
+;Redistribution and use in source and binary forms, with or without modification,
 ;are permitted provided that the following conditions are met:
 
- ;   Redistributions of source code must retain the above copyright notice, 
+ ;   Redistributions of source code must retain the above copyright notice,
  ;   this list of conditions and the following disclaimer.
- ;   Redistributions in binary form must reproduce the above copyright notice, 
- ;   this list of conditions and the following disclaimer in the documentation 
+ ;   Redistributions in binary form must reproduce the above copyright notice,
+ ;   this list of conditions and the following disclaimer in the documentation
  ;   and/or other materials provided with the distribution.
- ;   Neither the name of the Intel Corp. nor the names of its contributors 
- ;   may be used to endorse or promote products derived from this software 
- ;   without specific prior written permission. 
+ ;   Neither the name of the Intel Corp. nor the names of its contributors
+ ;   may be used to endorse or promote products derived from this software
+ ;   without specific prior written permission.
 
 
-;THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
-;AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
-;IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
-;ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE 
-;LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
-;CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
-;SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
-;INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, 
-;STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY 
+;THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+;AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+;IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+;ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+;LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+;CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+;SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+;INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+;STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY
 ;WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 ;
-;	get_cpuid.asm
-;	wrapper function to retrieve CPUID leaf and subleaf data, 
-;	returns CPUID leaf/subleaf raw data in a data structure
-;	This file can be compiled under 32-bit and 64-bit Windows environments.
-;  Written by Patrick Fay 
+;   get_cpuid.asm
+;   wrapper function to retrieve CPUID leaf and subleaf data,
+;   returns CPUID leaf/subleaf raw data in a data structure
+;   This file can be compiled under 32-bit and 64-bit Windows environments.
+;  Written by Patrick Fay
 ;
 ;
 ;  caller supplies three parameters;
@@ -38,14 +38,14 @@
 ;  leaf index
 ;  sub leaf index
 ;
-ifdef X86_64   
+ifdef X86_64
 ; -------------------------- 64bit ----------------------
-PUBLIC	get_cpuid_info
-_TEXT	SEGMENT
-get_cpuid_info	PROC
-;The ABI for passing integer arguments is different in windows and linux. 
-;In linux (that's what I used for the port), %rdi, %rsi, %rdx, %rcx, %r8 
-;and %r9 are used to pass INT type parameters, in windows rcx, rdx, r8 and 
+PUBLIC  get_cpuid_info
+_TEXT   SEGMENT
+get_cpuid_info  PROC
+;The ABI for passing integer arguments is different in windows and linux.
+;In linux (that's what I used for the port), %rdi, %rsi, %rdx, %rcx, %r8
+;and %r9 are used to pass INT type parameters, in windows rcx, rdx, r8 and
 ;r9 are used.
 ;
 ;REGISTER USAGE FOR WINDOWS:
@@ -64,7 +64,7 @@ get_cpuid_info	PROC
 ;registers for return  RAX, RDX, XMM0, XMM1, st(0), st(1)
 ;
 ; rax   rcx   rdx   rbx   rsp   rbp   rsi   rdi
-; eax   ecx   edx   ebx   esp   ebp   esi   edi 
+; eax   ecx   edx   ebx   esp   ebp   esi   edi
 ;  ax    cx    dx    bx    sp    bp    si    di
 ;  ah    ch    dh    bh    sph?  bph?  sih?  dih?
 ;  al    cl    dl    bl    spl   bpl   sil   dil
@@ -73,52 +73,52 @@ get_cpuid_info	PROC
     mov r10, r8   ; arg2, subleaf
     mov r8, rcx   ; arg0, array addr
     mov r9, rdx   ; arg1, leaf
-	push rax
-	push rbx
-	push rcx
-	push rdx
-	mov eax, r9d
-	mov ecx, r10d
-	cpuid
-	mov	DWORD PTR [r8], eax
-	mov	DWORD PTR [r8+4], ebx
-	mov	DWORD PTR [r8+8], ecx
-	mov	DWORD PTR [r8+12], edx
-	pop rdx
-	pop rcx
-	pop rbx
-	pop rax
-	ret
-get_cpuid_info	ENDP
-_TEXT	ENDS
+    push rax
+    push rbx
+    push rcx
+    push rdx
+    mov eax, r9d
+    mov ecx, r10d
+    cpuid
+    mov DWORD PTR [r8], eax
+    mov DWORD PTR [r8+4], ebx
+    mov DWORD PTR [r8+8], ecx
+    mov DWORD PTR [r8+12], edx
+    pop rdx
+    pop rcx
+    pop rbx
+    pop rax
+    ret
+get_cpuid_info  ENDP
+_TEXT   ENDS
 else
 ; -------------------------- 64bit ----------------------
-	.686P
-	.XMM
-	.model	flat
+    .686P
+    .XMM
+    .model  flat
 ;INCLUDELIB LIBCMT
 ;INCLUDELIB OLDNAMES
 
-PUBLIC	_get_cpuid_info
+PUBLIC  _get_cpuid_info
 ; Function compile flags: /Ogtpy
-_TEXT	SEGMENT
+_TEXT   SEGMENT
 _get_cpuid_info PROC
-	mov	edx, DWORD PTR 8[esp-4]   ; addr of start of output array
-	mov	eax, DWORD PTR 12[esp-4]  ; leaf
-	mov	ecx, DWORD PTR 16[esp-4]  ; subleaf
-	push edi
-	push ebx
-	mov  edi, edx                      ; edi has output addr
-	cpuid
-	mov	DWORD PTR [edi], eax
-	mov	DWORD PTR [edi+4], ebx
-	mov	DWORD PTR [edi+8], ecx
-	mov	DWORD PTR [edi+12], edx
-	pop ebx
-	pop edi
-	ret
+    mov edx, DWORD PTR 8[esp-4]   ; addr of start of output array
+    mov eax, DWORD PTR 12[esp-4]  ; leaf
+    mov ecx, DWORD PTR 16[esp-4]  ; subleaf
+    push edi
+    push ebx
+    mov  edi, edx                      ; edi has output addr
+    cpuid
+    mov DWORD PTR [edi], eax
+    mov DWORD PTR [edi+4], ebx
+    mov DWORD PTR [edi+8], ecx
+    mov DWORD PTR [edi+12], edx
+    pop ebx
+    pop edi
+    ret
 _get_cpuid_info ENDP
-_TEXT	ENDS
+_TEXT   ENDS
 
 
 endif
