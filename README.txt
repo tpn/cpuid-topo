@@ -1,3 +1,7 @@
+This repo was initialized from source made available here:
+https://software.intel.com/en-us/articles/intel-64-architecture-processor-topology-enumeration/
+
+--
 Copyright (c) 2009-2016, Intel Corp.	All rights reserved.
 
 1. Overview
